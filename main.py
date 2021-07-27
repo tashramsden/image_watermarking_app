@@ -22,6 +22,9 @@ class WaterMarker(Tk):
         super(WaterMarker, self).__init__()
         self.title("WaterMarker")
 
+        corner_icon = PhotoImage(file="logo.png")
+        self.iconphoto(True, corner_icon)
+
         self.canvas = Canvas(width=800, height=600, bg=WHITE, highlightthickness=0)
         self.canvas.grid(columnspan=4, rowspan=6)
 
