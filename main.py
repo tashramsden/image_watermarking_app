@@ -37,6 +37,18 @@ class WaterMarker(Tk):
         self.save_final_btn = Button(text="Save Image", bg=GREY, fg=WHITE, font=(FONT, 18), command=self.save)
         self.go_again_btn = Button(text="Go Again", bg=GREY, fg=WHITE, font=(FONT, 18), command=self.find_img)
 
+        self.radio_state = IntVar()
+        self.position = (0, 0)
+
+        self.top_left_btn = Radiobutton(text="Top Left", value=1, variable=self.radio_state,
+                                        command=self.set_logo_position, fg=GREY, bg=WHITE, font=(FONT, 14))
+        self.top_right_btn = Radiobutton(text="Top Right", value=2, variable=self.radio_state,
+                                         command=self.set_logo_position, fg=GREY, bg=WHITE, font=(FONT, 14))
+        self.bottom_left_btn = Radiobutton(text="Bottom Left", value=3, variable=self.radio_state,
+                                           command=self.set_logo_position, fg=GREY, bg=WHITE, font=(FONT, 14))
+        self.bottom_right_btn = Radiobutton(text="Bottom Right", value=4, variable=self.radio_state,
+                                            command=self.set_logo_position, fg=GREY, bg=WHITE, font=(FONT, 14))
+
         self.show_logo = None
         self.filename = None
         self.img = None
@@ -93,9 +105,25 @@ class WaterMarker(Tk):
 
         self.go_again_btn.grid_forget()
 
+    def set_logo_position(self):
+        selected_position = self.radio_state.get()
+        if selected_position == 1:
+            # top left
+            self.position = (0, 0)
+        elif selected_position == 2:
+            # top right
+            self.position = (self.img.size[0] - self.wm_logo.size[0], 0)
+        elif selected_position == 3:
+            # bottom left
+            self.position = (0, self.img.size[1] - self.wm_logo.size[1])
+        else:
+            # bottom right
+            self.position = (self.img.size[0] - self.wm_logo.size[0], self.img.size[1] - self.wm_logo.size[1])
+        self.add_watermark()
+
     def add_watermark(self):
         self.message_text.config(text="Does this look ok?\n"
-                                      "Any distortion here will not\nbe reflected in the saved image.")
+                                      "(Any distortion here will not\nbe reflected in the saved image).")
 
         # Watermark size relative to image
         # proportional to shorter side of the image (this is for a square logo)
@@ -105,21 +133,16 @@ class WaterMarker(Tk):
             resize = round(self.img.size[1] * 0.2)
         self.wm_logo = self.logo.resize((resize, resize))
 
-        # TODO: Create radio buttons for choosing position of logo
-        # NOTE: Set position of logo:
-        # bottom-right:
-        # position = (self.img.size[0] - self.wm_logo.size[0], self.img.size[1] - self.wm_logo.size[1])
-        # bottom-left:
-        position = (0, self.img.size[1] - self.wm_logo.size[1])
-        # top-right:
-        # position = (self.img.size[0] - self.wm_logo.size[0], 0)
-        # top-left:
-        # position = (0, 0)
+        # Radio buttons for choosing logo location
+        self.top_left_btn.grid(row=3, column=0)
+        self.top_right_btn.grid(row=3, column=1)
+        self.bottom_left_btn.grid(row=3, column=2)
+        self.bottom_right_btn.grid(row=3, column=3)
 
         # Create watermarked image (logo on top of image)
         self.final_img = Image.new('RGBA', self.img.size, (0, 0, 0, 0))
         self.final_img.paste(self.img, (0, 0))
-        self.final_img.paste(self.wm_logo, position, mask=self.wm_logo)
+        self.final_img.paste(self.wm_logo, self.position, mask=self.wm_logo)
 
         final_img_show = self.final_img
         final_img_show = final_img_show.resize((400, 400))
@@ -130,14 +153,17 @@ class WaterMarker(Tk):
         self.img_label = None
         self.img_label = Label(image=watermarked)
         self.img_label.image = watermarked
-
-        # self.label2.grid_forget()
         self.img_label.grid(row=2, column=1, columnspan=2)
 
         self.add_wtrmrk_btn.grid_forget()
         self.save_final_btn.grid(row=4, column=2, columnspan=1)
 
     def save(self):
+
+        self.top_left_btn.grid_forget()
+        self.top_right_btn.grid_forget()
+        self.bottom_left_btn.grid_forget()
+        self.bottom_right_btn.grid_forget()
 
         self.find_img_btn.grid_forget()
         self.save_final_btn.grid_forget()
